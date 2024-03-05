@@ -9,13 +9,14 @@ import org.eclipse.emf.ecore.EPackage;
 
 import edu.kit.ipd.sdq.metamodels.families.FamiliesPackage;
 import edu.kit.ipd.sdq.metamodels.persons.PersonsPackage;
+import edu.kit.ipd.sdq.vitruvius.cloud.adapter.endpoint.AllowAllOriginsFilter;
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.handler.RequestHandler;
 import tools.vitruv.framework.remote.client.VitruvClient;
 import tools.vitruv.framework.remote.client.VitruvClientFactory;
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.handler.ViewHandler;
 import com.sun.net.httpserver.HttpServer;
 
-public class Launch {
+public class AdapterLaunch {
 
 	public static void main(String[] args) throws IOException {
 		registerEPackages();
@@ -30,7 +31,7 @@ public class Launch {
 		Set<RequestHandler> handlers = Set.of(new ViewHandler(vitruvClient));
 		handlers.forEach(handler -> {
 			handler.init(null);
-			server.createContext(handler.getPath(),handler);
+			server.createContext(handler.getPath(),handler).getFilters().add(new AllowAllOriginsFilter());
 		});
 		
 		server.start();
@@ -43,25 +44,7 @@ public class Launch {
 
 	private static VitruvClient startClient() {
 		VitruvClient client = VitruvClientFactory.create("localhost", 8069, Path.of("adapter/temp"));
-
-		return client;
-		// var viewType = client.getViewTypes().stream().filter(eleme ->
-		// "identity-mapping".equals(eleme.getName()))
-		// .findFirst().get();
-		// var selector = client.createSelector(viewType);
-		// selector.getSelectableElements().forEach(el -> selector.setSelected(el,
-		// true));
-		//
-		// var view = selector.createView();
-		// var changeRecordingView = view.withChangeRecordingTrait();
-		// Collection<EObject> rootObjects = changeRecordingView.getRootObjects();
-		// FamilyRegister register = (FamilyRegister) rootObjects.stream().filter(elem
-		// -> elem instanceof FamilyRegister)
-		// .findFirst().get();
-		// var fam = FamiliesFactory.eINSTANCE.createFamily();
-		// fam.setLastName("Adpater");
-		// register.getFamilies().add(fam);
-		// changeRecordingView.commitChanges();
+		 return client;
 
 	}
 }

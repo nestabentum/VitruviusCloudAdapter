@@ -2,16 +2,17 @@ package edu.kit.ipd.sdq.vitruvius.cloud.adapter.endpoint;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.UUID;
-
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceCopier;
 
-import edu.kit.ipd.sdq.vitruvius.cloud.adapter.view.Cache;
 import tools.vitruv.framework.remote.client.VitruvClient;
+import tools.vitruv.framework.remote.client.HasRemoteUuid;
 import tools.vitruv.framework.remote.common.util.HttpExchangeWrapper;
 import tools.vitruv.framework.remote.common.util.constants.ContentType;
 import tools.vitruv.framework.remote.common.util.constants.Header;
@@ -22,11 +23,11 @@ import tools.vitruv.framework.views.ViewType;
 public class ViewEndpoint implements Endpoint.Post {
 
 	private final VitruvClient client;
-	private final ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper;
 
 	public ViewEndpoint(VitruvClient client) {
 		this.client = client;
-		//this.mapper = mapper;
+		this.mapper = new ObjectMapper();
 	}
 
 	@Override
@@ -39,33 +40,43 @@ public class ViewEndpoint implements Endpoint.Post {
 		var selector = createSelector(viewType);
 
 		var view = selector.createView().withChangeRecordingTrait();
+		if (!(view instanceof HasRemoteUuid)) {
+			return null;
+		}
+		String viewId = ((HasRemoteUuid) view).getRemoteUuid();
 
-		String viewId = UUID.randomUUID().toString();
-		Cache.addView(viewId, view);
 		wrapper.setContentType(ContentType.APPLICATION_JSON);
 		wrapper.addResponseHeader(Header.VIEW_UUID, viewId);
 
-		var resources = view.getRootObjects().stream().map(EObject::eResource).distinct().toList();
-		
-		
+		// var resources =
+		// view.getRootObjects().stream().map(EObject::eResource).distinct().toList();
+
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		var resources = view.getRootObjects().stream().map(EObject::eResource).distinct().toList();
+		ResourceSet set = new ResourceSetImpl();
+		set.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
+		ResourceCopier.copyViewResources(resources, set);
+
+		set.getResources().forEach(res -> {
+			try {
+				res.save(outputStream, null);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+
 		try {
-			resources.get(0).save(outputStream,null);
-		} catch(IOException ex)
-		{
-			return null;
-		}
-		
-		
-		try {
-			return mapper.writeValueAsString(new ViewResponse(viewId, outputStream.toString())) ;
+			return mapper.writeValueAsString(new ViewResponse(viewId, outputStream.toString()));
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
 	}
-	record ViewResponse (String id, String view) {}
+
+	record ViewResponse(String id, String view) {
+	}
 
 	private ViewSelector createSelector(ViewType<?> viewType) {
 		var selector = client.createSelector(viewType);
