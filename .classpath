@@ -7,6 +7,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="/tools.vitruv.framework.remote/target/tools.vitruv.framework.remote-3.0.1-SNAPSHOT.jar" sourcepath="C:/Users/nbe_adm/Documents/workspace/ma/remote/Vitruv/bundles/tools.vitruv.framework.remote/target/tools.vitruv.framework.remote-3.0.1-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="/tools.vitruv.framework.remote/target/tools.vitruv.framework.remote-3.0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

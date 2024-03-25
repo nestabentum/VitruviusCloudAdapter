@@ -2,15 +2,19 @@ package edu.kit.ipd.sdq.vitruvius.cloud.adapter.endpoint;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.XMIResource;
+import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceCopier;
-
+import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.Constants;
 import tools.vitruv.framework.remote.client.VitruvClient;
 import tools.vitruv.framework.remote.client.HasRemoteUuid;
 import tools.vitruv.framework.remote.common.util.HttpExchangeWrapper;
@@ -32,7 +36,7 @@ public class ViewEndpoint implements Endpoint.Post {
 
 	@Override
 	public String process(HttpExchangeWrapper wrapper) throws ServerHaltingException {
-		var viewTypeName = wrapper.getRequestHeader(Header.VIEW_TYPE);
+		var viewTypeName = wrapper.getRequestHeader(Constants.HttpHeaders.VIEW_TYPE);
 		if (viewTypeName == null) {
 			return null; // TODO
 		}
@@ -46,7 +50,7 @@ public class ViewEndpoint implements Endpoint.Post {
 		String viewId = ((HasRemoteUuid) view).getRemoteUuid();
 
 		wrapper.setContentType(ContentType.APPLICATION_JSON);
-		wrapper.addResponseHeader(Header.VIEW_UUID, viewId);
+		wrapper.addResponseHeader(Constants.HttpHeaders.VIEW_UUID, viewId);
 
 		// var resources =
 		// view.getRootObjects().stream().map(EObject::eResource).distinct().toList();
@@ -59,7 +63,8 @@ public class ViewEndpoint implements Endpoint.Post {
 
 		set.getResources().forEach(res -> {
 			try {
-				res.save(outputStream, null);
+
+				res.save(outputStream, Map.of(XMIResource.OPTION_SAVE_TYPE_INFORMATION, true));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -67,7 +72,7 @@ public class ViewEndpoint implements Endpoint.Post {
 		});
 
 		try {
-			return mapper.writeValueAsString(new ViewResponse(viewId, outputStream.toString()));
+			return mapper.writeValueAsString(new ViewResponse(viewId, outputStream.toString(), getFileEnding(viewType)));
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -75,12 +80,25 @@ public class ViewEndpoint implements Endpoint.Post {
 		}
 	}
 
-	record ViewResponse(String id, String view) {
+	private String getFileEnding(ViewType<?> viewType) {
+		var viewTypeEnum = edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.ViewType.valueOf(viewType.getName());
+		return viewTypeEnum.getFileEnding();
+	}
+
+	record ViewResponse(String id, String view, String fileEnding) {
 	}
 
 	private ViewSelector createSelector(ViewType<?> viewType) {
+		var viewTypeEnum = edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.ViewType.valueOf(viewType.getName());
 		var selector = client.createSelector(viewType);
-		selector.getSelectableElements().forEach(el -> selector.setSelected(el, true));
+		boolean foundFirst = false;
+		selector.getSelectableElements().forEach(el -> {
+			if (!foundFirst && viewTypeEnum.getEpackageName().equals(el.eClass().getEPackage().getName()) ){
+				selector.setSelected(el, true);
+			} else {
+				selector.setSelected(el,false);
+			}
+		});
 		return selector;
 	}
 

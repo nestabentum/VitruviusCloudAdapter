@@ -9,9 +9,9 @@ Require-Bundle: tools.vitruv.framework.vsum;bundle-version="3.0.1",
  com.fasterxml.jackson.core.jackson-core;bundle-version="2.16.0",
  org.eclipse.emfcloud.emfjson-jackson;bundle-version="2.3.0",
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.16.0",
- edu.kit.ipd.sdq.metamodels.families;bundle-version="1.9.0",
- edu.kit.ipd.sdq.metamodels.persons;bundle-version="1.9.0",
  org.eclipse.emf.ecore.xmi;bundle-version="2.36.0",
- org.eclipse.emf.ecore.edit;bundle-version="2.14.0"
+ org.eclipse.emf.ecore.edit;bundle-version="2.14.0",
+ edu.kit.ipd.sdq.metamodels.families;bundle-version="1.8.0",
+ edu.kit.ipd.sdq.metamodels.persons;bundle-version="1.8.0"
 Automatic-Module-Name: VitruviusCloudAdapter
 Bundle-RequiredExecutionEnvironment: JavaSE-17
