@@ -4,11 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMIResource;
-import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,9 +17,9 @@ import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceCopie
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.Constants;
 import tools.vitruv.framework.remote.client.VitruvClient;
 import tools.vitruv.framework.remote.client.HasRemoteUuid;
+import edu.kit.ipd.sdq.vitruvius.cloud.adapter.cache.Cache;
 import tools.vitruv.framework.remote.common.util.HttpExchangeWrapper;
 import tools.vitruv.framework.remote.common.util.constants.ContentType;
-import tools.vitruv.framework.remote.common.util.constants.Header;
 import tools.vitruv.framework.remote.server.exception.ServerHaltingException;
 import tools.vitruv.framework.views.ViewSelector;
 import tools.vitruv.framework.views.ViewType;
@@ -47,8 +47,9 @@ public class ViewEndpoint implements Endpoint.Post {
 		if (!(view instanceof HasRemoteUuid)) {
 			return null;
 		}
+		
 		String viewId = ((HasRemoteUuid) view).getRemoteUuid();
-
+		Cache.addView(viewId, view);
 		wrapper.setContentType(ContentType.APPLICATION_JSON);
 		wrapper.addResponseHeader(Constants.HttpHeaders.VIEW_UUID, viewId);
 
@@ -72,7 +73,9 @@ public class ViewEndpoint implements Endpoint.Post {
 		});
 
 		try {
-			return mapper.writeValueAsString(new ViewResponse(viewId, outputStream.toString(), getFileEnding(viewType)));
+		URI resourceURI = set.getResources().stream().map(res -> res.getURI()).findFirst().orElseThrow();
+		
+			return mapper.writeValueAsString(new ViewResponse(viewId, outputStream.toString(), getFileEnding(viewType), resourceURI.toFileString()));
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -85,7 +88,7 @@ public class ViewEndpoint implements Endpoint.Post {
 		return viewTypeEnum.getFileEnding();
 	}
 
-	record ViewResponse(String id, String view, String fileEnding) {
+	record ViewResponse(String id, String view, String fileEnding, String resourceURI) {
 	}
 
 	private ViewSelector createSelector(ViewType<?> viewType) {

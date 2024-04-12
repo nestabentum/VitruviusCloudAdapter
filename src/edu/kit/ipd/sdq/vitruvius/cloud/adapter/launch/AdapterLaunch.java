@@ -12,6 +12,7 @@ import edu.kit.ipd.sdq.metamodels.persons.PersonsPackage;
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.client.ClientStarter;
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.endpoint.AllowAllOriginsFilter;
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.handler.RequestHandler;
+import tools.vitruv.change.atomic.AtomicPackage;
 import tools.vitruv.framework.remote.client.VitruvClient;
 import tools.vitruv.framework.remote.client.VitruvClientFactory;
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.handler.ViewHandler;
@@ -35,6 +36,7 @@ public class AdapterLaunch {
 	private static void registerEPackages() {
 		EPackage.Registry.INSTANCE.put(FamiliesPackage.eNS_URI, FamiliesPackage.eINSTANCE);
 		EPackage.Registry.INSTANCE.put(PersonsPackage.eNS_URI, PersonsPackage.eINSTANCE);
+		EPackage.Registry.INSTANCE.put(AtomicPackage.eNS_URI, AtomicPackage.eINSTANCE);
 	}
 
 }

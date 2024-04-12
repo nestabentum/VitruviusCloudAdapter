@@ -1,46 +1,70 @@
 package edu.kit.ipd.sdq.vitruvius.cloud.adapter.endpoint;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.file.Path;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.Constants;
-import tools.vitruv.framework.remote.client.VitruvClient;
+import edu.kit.ipd.sdq.vitruvius.cloud.adapter.cache.Cache;
+import tools.vitruv.change.composite.description.VitruviusChange;
+import tools.vitruv.framework.remote.client.impl.ChangeRecordingRemoteView;
 import tools.vitruv.framework.remote.common.util.HttpExchangeWrapper;
+import tools.vitruv.framework.remote.common.util.JsonMapper;
 import tools.vitruv.framework.remote.common.util.constants.ContentType;
 import tools.vitruv.framework.remote.common.util.constants.Header;
 import tools.vitruv.framework.remote.server.exception.ServerHaltingException;
 
 public class ChangePropagationEndpoint implements Endpoint.Patch {
-	
+
 	private final HttpClient httpClient;
+	private final JsonMapper mapper;
 
 	public ChangePropagationEndpoint() {
-		
+		this.mapper = new JsonMapper(Path.of("/cloud-vsum"));
 		this.httpClient = HttpClient.newHttpClient();
 
 	}
 
 	@Override
 	public String process(HttpExchangeWrapper wrapper) throws ServerHaltingException {
-		var view = wrapper.getRequestHeader(Constants.HttpHeaders.VIEW_UUID);
-		
-		HttpRequest request = null;
+		var viewId = wrapper.getRequestHeader(Constants.HttpHeaders.VIEW_UUID);
+		var view = Cache.getView(viewId);
+		if (!(view instanceof ChangeRecordingRemoteView)) {
+			return null;
+
+		}
+		ChangeRecordingRemoteView remoteView = ((ChangeRecordingRemoteView) view);
+		String unserializedChanges = "";
 		try {
-			request = HttpRequest.newBuilder(URI.create("http://localhost:8069/vsum/view"))
-					.header(Header.CONTENT_TYPE, ContentType.APPLICATION_JSON).header(Constants.HttpHeaders.VIEW_UUID, view)
-					.method("PATCH", BodyPublishers.ofString(wrapper.getRequestBodyAsString())).build();
+			 unserializedChanges = wrapper.getRequestBodyAsString();
+			var changes = mapper.deserialize(unserializedChanges,VitruviusChange.class);
+			System.out.println(changes);
+	//var changeResolver = VitruviusChangeResolver.forHierarchicalIds(remoteView.get.getViewSource();)
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		HttpRequest request = null;
+		request = HttpRequest.newBuilder(URI.create("http://localhost:8069/vsum/view"))
+				.header(Header.CONTENT_TYPE, ContentType.APPLICATION_JSON)
+				.header(Constants.HttpHeaders.VIEW_UUID, viewId)
+				.method("PATCH", BodyPublishers.ofString(unserializedChanges)).build();
 		;
 		try {
-			return httpClient.send(request, BodyHandlers.ofString()).body();
+			var propagationResponse = httpClient.send(request, BodyHandlers.ofString());
+			return propagationResponse.body();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

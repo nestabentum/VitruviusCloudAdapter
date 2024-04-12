@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: VitruviusCloudAdapter
 Bundle-SymbolicName: VitruviusCloudAdapter
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 0.2
 Import-Package: edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource
 Require-Bundle: tools.vitruv.framework.vsum;bundle-version="3.0.1",
  com.fasterxml.jackson.core.jackson-databind;bundle-version="2.16.0",
