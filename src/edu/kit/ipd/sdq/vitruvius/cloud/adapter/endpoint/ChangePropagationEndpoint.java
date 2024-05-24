@@ -11,9 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.Constants;
-import edu.kit.ipd.sdq.vitruvius.cloud.adapter.cache.Cache;
 import tools.vitruv.change.composite.description.VitruviusChange;
-import tools.vitruv.framework.remote.client.impl.ChangeRecordingRemoteView;
 import tools.vitruv.framework.remote.common.util.HttpExchangeWrapper;
 import tools.vitruv.framework.remote.common.util.JsonMapper;
 import tools.vitruv.framework.remote.common.util.constants.ContentType;
@@ -34,12 +32,8 @@ public class ChangePropagationEndpoint implements Endpoint.Patch {
 	@Override
 	public String process(HttpExchangeWrapper wrapper) throws ServerHaltingException {
 		var viewId = wrapper.getRequestHeader(Constants.HttpHeaders.VIEW_UUID);
-		var view = Cache.getView(viewId);
-		if (!(view instanceof ChangeRecordingRemoteView)) {
-			return null;
 
-		}
-		ChangeRecordingRemoteView remoteView = ((ChangeRecordingRemoteView) view);
+		
 		String unserializedChanges = "";
 		try {
 			 unserializedChanges = wrapper.getRequestBodyAsString();

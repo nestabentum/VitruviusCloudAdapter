@@ -17,7 +17,6 @@ import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceCopie
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.Constants;
 import tools.vitruv.framework.remote.client.VitruvClient;
 import tools.vitruv.framework.remote.client.HasRemoteUuid;
-import edu.kit.ipd.sdq.vitruvius.cloud.adapter.cache.Cache;
 import tools.vitruv.framework.remote.common.util.HttpExchangeWrapper;
 import tools.vitruv.framework.remote.common.util.constants.ContentType;
 import tools.vitruv.framework.remote.server.exception.ServerHaltingException;
@@ -49,7 +48,6 @@ public class ViewEndpoint implements Endpoint.Post {
 		}
 		
 		String viewId = ((HasRemoteUuid) view).getRemoteUuid();
-		Cache.addView(viewId, view);
 		wrapper.setContentType(ContentType.APPLICATION_JSON);
 		wrapper.addResponseHeader(Constants.HttpHeaders.VIEW_UUID, viewId);
 
