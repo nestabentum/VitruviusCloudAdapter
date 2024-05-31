@@ -71,7 +71,7 @@ public abstract class RequestHandler implements HttpHandler {
     /**
      * Initializes the supported endpoints of this request handler.
      */
-    public abstract void init( JsonMapper mapper);
+    public abstract void init( JsonMapper mapper); // TODO check whether the parameter is necessary
 
     /**
      * Handles the request, when this end point is called.

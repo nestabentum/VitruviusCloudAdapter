@@ -10,9 +10,9 @@ public class AllowAllOriginsFilter extends Filter {
 	@Override
 	public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
 		exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-		exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS");
+		exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS"); // TODO check this
 		exchange.getResponseHeaders().add("Access-Control-Allow-Headers",
-				"Content-Type, Authorization, X-Requested-With, View-Type, selector-uuid");
+				"Content-Type, Authorization, X-Requested-With, View-Type, selector-uuid"); // TODO check custom header conventions
 		exchange.getResponseHeaders().add("Access-Control-Expose-Headers", "selector-uuid, view-uuid");
 		if ("OPTIONS".equals(exchange.getRequestMethod())) {
 			exchange.sendResponseHeaders(204, -1);

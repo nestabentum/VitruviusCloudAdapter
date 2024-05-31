@@ -14,6 +14,6 @@ public class ChangePropagationHandler extends RequestHandler{
 
 	@Override
 	public void init( JsonMapper mapper) {
-	    this.patchEndpoint = new ChangePropagationEndpoint() ;
+	    this.patchEndpoint = new ChangePropagationEndpoint() ; // TODO delete this or remove from other handler
 	}
 }

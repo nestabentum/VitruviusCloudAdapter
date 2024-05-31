@@ -22,7 +22,7 @@ public class ServerStarter {
 	public void startServer() throws IOException {
 		var server = HttpServer.create(new InetSocketAddress(8070), 0);
 
-		Set<RequestHandler> handlers = Set.of(new ViewHandler(vitruvClient));
+		Set<RequestHandler> handlers = Set.of(new ViewHandler(vitruvClient)); // TODO delete set or introduce anpther handler
 		handlers.forEach(handler -> {
 			handler.init(null);
 			server.createContext(handler.getPath(), handler).getFilters().add(new AllowAllOriginsFilter());
