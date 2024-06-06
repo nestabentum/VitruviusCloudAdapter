@@ -1,11 +1,14 @@
 package edu.kit.ipd.sdq.vitruvius.cloud.adapter.endpoint;
 
+import org.eclipse.emf.ecore.EObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.logging.log4j.*;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
+
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMIResource;
@@ -24,7 +27,7 @@ import tools.vitruv.framework.views.ViewSelector;
 import tools.vitruv.framework.views.ViewType;
 
 public class ViewEndpoint implements Endpoint.Post {
-
+	private static Logger logger = LogManager.getLogger(ViewEndpoint.class);
 	private final VitruvClient client;
 	private final ObjectMapper mapper;
 
@@ -35,49 +38,62 @@ public class ViewEndpoint implements Endpoint.Post {
 
 	@Override
 	public String process(HttpExchangeWrapper wrapper) throws ServerHaltingException {
-		var viewTypeName = wrapper.getRequestHeader(Constants.HttpHeaders.VIEW_TYPE);
-		if (viewTypeName == null) {
-			return null; // TODO
-		}
-		var viewType = getViewType(viewTypeName);
-		var selector = createSelector(viewType);
+		try {
+			var viewTypeName = wrapper.getRequestHeader(Constants.HttpHeaders.VIEW_TYPE);
 
-		var view = selector.createView().withChangeRecordingTrait();
-		if (!(view instanceof HasRemoteUuid)) {
-			return null;
-		}
-		
-		String viewId = ((HasRemoteUuid) view).getRemoteUuid();
-		wrapper.setContentType(ContentType.APPLICATION_JSON);
-		wrapper.addResponseHeader(Constants.HttpHeaders.VIEW_UUID, viewId);
+			if (viewTypeName == null) {
+				logger.error("Could not fetch view because no view type has been specified");
+				return null; // TODO
 
-		// var resources =
-		// view.getRootObjects().stream().map(EObject::eResource).distinct().toList();
+			}
+			logger.info("Fetching view for view type" + viewTypeName);
+			var viewType = getViewType(viewTypeName);
+			var selector = createSelector(viewType);
+			logger.info("Fetched selector " + selector);
+			var view = selector.createView().withChangeRecordingTrait();
+			if (!(view instanceof HasRemoteUuid)) {
+				return null;
+			}
 
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		var resources = view.getRootObjects().stream().map(EObject::eResource).distinct().toList();
-		ResourceSet set = new ResourceSetImpl();
-		set.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
-		ResourceCopier.copyViewResources(resources, set);
+			String viewId = ((HasRemoteUuid) view).getRemoteUuid();
+			wrapper.setContentType(ContentType.APPLICATION_JSON);
+			wrapper.addResponseHeader(Constants.HttpHeaders.VIEW_UUID, viewId);
 
-		set.getResources().forEach(res -> {
+			// var resources =
+			// view.getRootObjects().stream().map(EObject::eResource).distinct().toList();
+
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			var resources = view.getRootObjects().stream().map(EObject::eResource).distinct().toList();
+			ResourceSet set = new ResourceSetImpl();
+			set.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
+			ResourceCopier.copyViewResources(resources, set);
+
+			set.getResources().forEach(res -> {
+				try {
+
+					res.save(outputStream, Map.of(XMIResource.OPTION_SAVE_TYPE_INFORMATION, true));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+			logger.debug("wrote view to outputstream");
 			try {
+				URI resourceURI = set.getResources().stream().map(res -> res.getURI()).findFirst().orElseThrow();
 
-				res.save(outputStream, Map.of(XMIResource.OPTION_SAVE_TYPE_INFORMATION, true));
-			} catch (IOException e) {
+				var result = mapper.writeValueAsString(new ViewResponse(viewId, outputStream.toString(),
+						getFileEnding(viewType), resourceURI.toFileString()));
+				logger.debug("mapped view to value " + result);
+				logger.debug("Fetched view", result);
+				return result;
+			} catch (JsonProcessingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return null;
 			}
-		});
-
-		try {
-		URI resourceURI = set.getResources().stream().map(res -> res.getURI()).findFirst().orElseThrow();
-		
-			return mapper.writeValueAsString(new ViewResponse(viewId, outputStream.toString(), getFileEnding(viewType), resourceURI.toFileString()));
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+		} catch (Exception e) {
+			logger.error("error", e);
+			return "";
 		}
 	}
 
@@ -94,10 +110,10 @@ public class ViewEndpoint implements Endpoint.Post {
 		var selector = client.createSelector(viewType);
 		boolean foundFirst = false;
 		selector.getSelectableElements().forEach(el -> {
-			if (!foundFirst && viewTypeEnum.getEpackageName().equals(el.eClass().getEPackage().getName()) ){
+			if (!foundFirst && viewTypeEnum.getEpackageName().equals(el.eClass().getEPackage().getName())) {
 				selector.setSelected(el, true);
 			} else {
-				selector.setSelected(el,false);
+				selector.setSelected(el, false);
 			}
 		});
 		return selector;

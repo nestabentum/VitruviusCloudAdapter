@@ -5,13 +5,19 @@ Bundle-SymbolicName: VitruviusCloudAdapter
 Bundle-Version: 0.2
 Import-Package: edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource
 Require-Bundle: tools.vitruv.framework.vsum;bundle-version="3.0.1",
- com.fasterxml.jackson.core.jackson-databind;bundle-version="2.16.0",
- com.fasterxml.jackson.core.jackson-core;bundle-version="2.16.0",
  org.eclipse.emfcloud.emfjson-jackson;bundle-version="2.3.0",
- com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.16.0",
- org.eclipse.emf.ecore.xmi;bundle-version="2.36.0",
  org.eclipse.emf.ecore.edit;bundle-version="2.14.0",
  edu.kit.ipd.sdq.metamodels.families;bundle-version="1.8.0",
- edu.kit.ipd.sdq.metamodels.persons;bundle-version="1.8.0"
+ edu.kit.ipd.sdq.metamodels.persons;bundle-version="1.8.0",
+ tools.vitruv.change.composite,
+ com.fasterxml.jackson.core.jackson-core.source;bundle-version="2.16.1",
+ org.eclipse.emf.ecore.xmi.source;bundle-version="2.35.0",
+ com.fasterxml.jackson.core.jackson-annotations.source;bundle-version="2.12.6",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.12.6",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.16.1",
+ org.eclipse.emf.ecore.xmi;bundle-version="2.35.0",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.16.1",
+ org.apache.log4j;bundle-version="1.2.25",
+ org.eclipse.ocl.ecore;bundle-version="3.18.0"
 Automatic-Module-Name: VitruviusCloudAdapter
 Bundle-RequiredExecutionEnvironment: JavaSE-17

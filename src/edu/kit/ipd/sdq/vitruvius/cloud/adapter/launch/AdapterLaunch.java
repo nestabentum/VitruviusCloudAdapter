@@ -1,26 +1,18 @@
 package edu.kit.ipd.sdq.vitruvius.cloud.adapter.launch;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.file.Path;
-import java.util.Set;
-
+import org.apache.logging.log4j.*;
 import org.eclipse.emf.ecore.EPackage;
 
 import edu.kit.ipd.sdq.metamodels.families.FamiliesPackage;
 import edu.kit.ipd.sdq.metamodels.persons.PersonsPackage;
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.client.ClientStarter;
-import edu.kit.ipd.sdq.vitruvius.cloud.adapter.endpoint.AllowAllOriginsFilter;
-import edu.kit.ipd.sdq.vitruvius.cloud.adapter.handler.RequestHandler;
 import tools.vitruv.change.atomic.AtomicPackage;
 import tools.vitruv.framework.remote.client.VitruvClient;
-import tools.vitruv.framework.remote.client.VitruvClientFactory;
-import edu.kit.ipd.sdq.vitruvius.cloud.adapter.handler.ViewHandler;
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.server.ServerStarter;
 
-import com.sun.net.httpserver.HttpServer;
-
 public class AdapterLaunch {
+	private static Logger logger = LogManager.getLogger(AdapterLaunch.class);
 
 	public static void main(String[] args) throws IOException {
 		registerEPackages();
@@ -29,6 +21,7 @@ public class AdapterLaunch {
 		VitruvClient vitruvClient = clientStarter.startClient();
 
 		ServerStarter serverStarter = new ServerStarter(vitruvClient);
+		logger.info("Starting Server");
 		serverStarter.startServer();
 
 	}
