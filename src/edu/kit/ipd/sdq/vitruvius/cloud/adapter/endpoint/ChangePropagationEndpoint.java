@@ -3,6 +3,7 @@ package edu.kit.ipd.sdq.vitruvius.cloud.adapter.endpoint;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.Constants;
+import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.VitruvServer;
 import tools.vitruv.change.composite.description.VitruviusChange;
 import tools.vitruv.framework.remote.common.util.HttpExchangeWrapper;
 import tools.vitruv.framework.remote.common.util.JsonMapper;
@@ -33,13 +35,13 @@ public class ChangePropagationEndpoint implements Endpoint.Patch {
 	public String process(HttpExchangeWrapper wrapper) throws ServerHaltingException {
 		var viewId = wrapper.getRequestHeader(Constants.HttpHeaders.VIEW_UUID);
 
-		
 		String unserializedChanges = "";
 		try {
-			 unserializedChanges = wrapper.getRequestBodyAsString();
-			var changes = mapper.deserialize(unserializedChanges,VitruviusChange.class);
+			unserializedChanges = wrapper.getRequestBodyAsString();
+			var changes = mapper.deserialize(unserializedChanges, VitruviusChange.class);
 			System.out.println(changes);
-	//var changeResolver = VitruviusChangeResolver.forHierarchicalIds(remoteView.get.getViewSource();)
+			// var changeResolver =
+			// VitruviusChangeResolver.forHierarchicalIds(remoteView.get.getViewSource();)
 		} catch (JsonMappingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -51,7 +53,7 @@ public class ChangePropagationEndpoint implements Endpoint.Patch {
 			e.printStackTrace();
 		}
 		HttpRequest request = null;
-		request = HttpRequest.newBuilder(URI.create("http://localhost:8069/vsum/view"))
+		request = HttpRequest.newBuilder().uri(URI.create(VitruvServer.getUrl() + "/vsum/view")).version(Version.HTTP_2)
 				.header(Header.CONTENT_TYPE, ContentType.APPLICATION_JSON)
 				.header(Constants.HttpHeaders.VIEW_UUID, viewId)
 				.method("PATCH", BodyPublishers.ofString(unserializedChanges)).build();

@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.VitruvAdapter;
+import edu.kit.ipd.sdq.vitruvius.cloud.adapter.constants.VitruvServer;
 import tools.vitruv.framework.remote.client.VitruvClient;
 import tools.vitruv.framework.remote.client.VitruvClientFactory;
 
@@ -14,13 +16,8 @@ public class ClientStarter {
 	record ClientConfiguration(String url, int port, String projectRootPath) {
 	}
 
-	public static ClientConfiguration clientConfiguration = new ClientConfiguration(getHost(), 8069, "adapter/temp");
-
-	private static String getHost() {
-		String systemEnvVal = System.getenv("SERVER_HOST");
-		logger.debug("Found environment variable SERVER_HOST " + systemEnvVal);
-		return systemEnvVal == null ? "localhost" : systemEnvVal;
-	}
+	public static ClientConfiguration clientConfiguration = new ClientConfiguration(VitruvServer.getVitruvServerHost(),
+			VitruvServer.getVitruvServerPort(), "adapter/temp");
 
 	public VitruvClient startClient() {
 		VitruvClient client = VitruvClientFactory.create(clientConfiguration.url, clientConfiguration.port,
