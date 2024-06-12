@@ -53,7 +53,7 @@ public class ChangePropagationEndpoint implements Endpoint.Patch {
 			e.printStackTrace();
 		}
 		HttpRequest request = null;
-		request = HttpRequest.newBuilder().uri(URI.create(VitruvServer.getUrl() + "/vsum/view")).version(Version.HTTP_2)
+		request = HttpRequest.newBuilder().uri(URI.create(VitruvServer.getUrl() + "/vsum/view"))
 				.header(Header.CONTENT_TYPE, ContentType.APPLICATION_JSON)
 				.header(Constants.HttpHeaders.VIEW_UUID, viewId)
 				.method("PATCH", BodyPublishers.ofString(unserializedChanges)).build();
